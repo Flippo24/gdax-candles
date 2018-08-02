@@ -8,24 +8,16 @@ class Exchange {
       [this.product],
       'wss://ws-feed.pro.coinbase.com',
       null,
-      { channels: ['matches'] }
+      { channels: ['matches', 'heartbeat'] }
     );
     this._initSocket();
   }
 
   _initSocket() {
-    this.websocket.on('error', (err) => {
-      console.log(err);
-    });
-
-    // if it closes reconnect
     this.websocket.on('close', (data) => {
-      console.error();('ERROR', 'Websocket Error', `websocket closed unexpectedly with data: ${data}. Attempting to re-connect.`);
+      console.log('ERROR', 'Websocket Error', `websocket closed unexpectedly with data: ${data}. Attempting to re-connect.`);
 
-      // try to re-connect the first time...
-      this.websocket.connect();
-
-      // attempt to re-connect every 30 seconds.
+      // attempt to re-connect every 5 seconds.
       const interval = setInterval(() => {
         if (!this.websocket.socket) {
             this.websocket.connect();
@@ -33,7 +25,7 @@ class Exchange {
         else {
             clearInterval(interval);
         }
-      }, 10000);
+      }, 5000);
     });
   }
 }

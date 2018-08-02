@@ -10,6 +10,7 @@ class Price extends EventEmitter {
     super();
     this.product = product;
     this.lastPrice = null;
+    this.timeout = null;
   }
 
   start() {
@@ -23,11 +24,22 @@ class Price extends EventEmitter {
       if (e.type === 'match') {
         this.lastPrice = Number(e.price);
         this.emit('change', e);
-      }
+      };
+      if (e.type === 'heartbeat') {
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(function() {
+          if (!websocket.socket) {
+            websocket.connect();
+          };
+          websocket.disconnect('missing heartbeat');
+        }, 10000);
+      };
     });
     websocket.on('error', (error) => {
-      this.emit('error', { error });
+      console.log(error)
+      // this.emit('error', { error });
     });
+
   }
 
   getLastPrice() {
